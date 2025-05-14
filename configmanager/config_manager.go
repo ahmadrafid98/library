@@ -34,6 +34,67 @@ func New(opt Option) *ConfigManager {
 	}
 }
 
+func (c *ConfigManager) throwErrorIfNotExists(path string) error {
+	if !c.Exists(path) {
+		return fmt.Errorf("config path: %s not found", path)
+	}
+
+	return nil
+}
+
+func (c *ConfigManager) Exists(path string) bool {
+	return c.koanf.Exists(path)
+}
+
+func (c *ConfigManager) GetString(path string) (string, error) {
+	err := c.throwErrorIfNotExists(path)
+	if err != nil {
+		return "", err
+	}
+
+	return c.koanf.String(path), nil
+}
+
+func (c *ConfigManager) GetBool(path string) (bool, error) {
+	err := c.throwErrorIfNotExists(path)
+	if err != nil {
+		return false, err
+	}
+
+	return c.koanf.Bool(path), nil
+}
+
+func (c *ConfigManager) GetInt(path string) (int, error) {
+	err := c.throwErrorIfNotExists(path)
+	if err != nil {
+		return 0, err
+	}
+
+	return c.koanf.Int(path), nil
+}
+
+func (c *ConfigManager) GetFloat64(path string) (float64, error) {
+	err := c.throwErrorIfNotExists(path)
+	if err != nil {
+		return 0, err
+	}
+
+	return c.koanf.Float64(path), nil
+}
+
+func (c *ConfigManager) GetMapString(path string) (map[string]string, error) {
+	err := c.throwErrorIfNotExists(path)
+	if err != nil {
+		return map[string]string{}, err
+	}
+
+	return c.koanf.StringMap(path), nil
+}
+
+func (c *ConfigManager) GetAll() (map[string]interface{}, error) {
+	return c.koanf.All(), nil
+}
+
 func (c *ConfigManager) Load(configMap interface{}) error {
 	err := c.loadFromFile()
 	if err != nil {
@@ -89,5 +150,5 @@ func (c *ConfigManager) loadFromEnvVar() error {
 }
 
 func (c *ConfigManager) unmarshal(configMap interface{}) error {
-	return c.koanf.Unmarshal("", configMap)
+	return c.koanf.UnmarshalWithConf("", configMap, koanf.UnmarshalConf{Tag: "conf", FlatPaths: true})
 }
